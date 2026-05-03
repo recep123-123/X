@@ -1,6 +1,6 @@
-OMNINOMICS v5.1.2 — Premium Cockpit / Free News Watch
+OMNINOMICS v5.1.5 — Real Free News Fix / Display Only
 
-Bu sürümde haber akışı karar motoruna bağlanmadı.
+Bu sürüm, v5.1.4'te görünen "sistem notlarının haber gibi akması" sorununu düzeltir.
 
 ANA KURAL
 - Haberler ekranda görünür.
@@ -9,61 +9,44 @@ ANA KURAL
 - Karar motoru: OHLCV Core.
 - Funding / OI / orderbook: panel/gözlem amaçlıdır, karar dışıdır.
 
-HABER KAYNAKLARI
-1) GDELT: varsayılan, ücretsiz, API key gerektirmez.
-2) FreeNewsApi: opsiyonel ücretsiz kaynak. Vercel Environment Variable:
-   FREENEWS_API_KEY=...
-3) Finnhub: opsiyonel finans haber kaynağı. Vercel Environment Variable:
-   FINNHUB_API_KEY=...
+HABER AKIŞI DÜZELTMESİ
+- Artık fallback/system/debug satırları haber gibi ticker'da akmaz.
+- Gerçek haber gelmezse ticker açıkça "HABER DURUMU" gösterir.
+- Haber panelinde debug notu görünür; sahte haber üretilmez.
+- /api/news artık news_available alanı döndürür.
 
-NOT
-- X / @DeItaone entegrasyonu bu sürümde ana kaynak değildir; ücretli API bağımlılığı istemediğimiz için ücretsiz haber mimarisine geçildi.
-- /api/news endpoint'i display_only=true ve decision_weight=0 döndürür.
+ÜCRETSİZ / KEY'SİZ HABER KAYNAKLARI
+1) CryptoCompare public news endpoint — varsa kullanılır.
+2) RSS kaynakları:
+   - CoinDesk RSS
+   - Cointelegraph RSS
+   - Yahoo Finance BTC/ETH headline RSS
+3) GDELT DOC API — ücretsiz, API key gerektirmez.
 
-Vercel deploy:
-- ZIP'i Vercel'e yükle.
-- Ekstra key girmesen de GDELT ile çalışır.
-- FreeNewsApi veya Finnhub key eklersen haber havuzu genişler.
+OPSİYONEL KAYNAKLAR
+- FREENEWS_API_KEY=...
+- FINNHUB_API_KEY=...
+- CRYPTOCOMPARE_API_KEY=...  (zorunlu değil, varsa daha stabil olabilir)
 
-
-================ OMNINOMICS v5.1.4 — TÜRKÇE HABER GÜNCELLEMESİ ================
-
-Bu sürümde haber akışı karar motoruna bağlanmadan ekranda gösterilir.
-Karar ağırlığı: 0%
-Decision binding: DISABLED
-
-Yeni özellikler:
-- Haber başlığı için Türkçe gösterim alanı: title_display / title_tr
-- Haber açıklaması için Türkçe gösterim alanı: description_display / description_tr
-- Orijinal başlık korunur: title_original
-- Orijinal açıklama korunur: description_original
-- Haber panelinde Türkçe başlık + Türkçe açıklama gösterilir.
-- Ticker Türkçe başlığı kullanır.
-- Çeviri anahtarı yoksa uygulama bozulmaz; orijinal dil gösterilir.
+TÜRKÇE ÇEVİRİ
+Varsayılan akış:
+- GOOGLE_TRANSLATE_API_KEY varsa Google kullanılır.
+- LIBRETRANSLATE_URL varsa LibreTranslate kullanılır.
+- Hiçbiri yoksa MyMemory ücretsiz çeviri fallback'i denenir.
 
 Opsiyonel ortam değişkenleri:
 NEWS_LANGUAGE=tr
-NEWS_TRANSLATION_PROVIDER=auto | google | libre | none
+NEWS_TRANSLATION_PROVIDER=auto | google | libre | mymemory | none
 GOOGLE_TRANSLATE_API_KEY=...
 LIBRETRANSLATE_URL=https://senin-libretranslate-sunucun.com
 LIBRETRANSLATE_API_KEY=...  (opsiyonel)
+MYMEMORY_EMAIL=...          (opsiyonel ama yüksek kullanımda tavsiye edilir)
+MYMEMORY_API_KEY=...        (opsiyonel)
 
-Ücretsiz haber omurgası:
-- GDELT varsayılan ve key gerektirmez.
+VERCEL DEPLOY
+- ZIP'i Vercel'e yükle.
+- Ekstra key girmeden de haber kaynakları denenir.
+- Haber kaynakları boş dönerse uygulama bozulmaz; panelde nedenini gösterir.
 
-Opsiyonel haber kaynakları:
-FREENEWS_API_KEY=...
-FINNHUB_API_KEY=...
-
-Not:
-Başlık ve açıklama Türkçeye çevrilse bile haberler LONG/SHORT/WAIT kararına bağlanmaz.
-Haberler yalnızca ekranda hızlı piyasa istihbaratı olarak gösterilir.
-===============================================================================
-
-
-v5.1.4 UI düzeltmesi:
-- Üst header tek satıra sıkıştırıldı; zaman periyodu seçici artık tam genişlik almıyor.
-- Türkçe haber ticker taşma/üst üste binme sorunu giderildi.
-- Haber etiketi sabitlendi, kayan yazı alanı ayrıldı.
-- Grafik yüksekliği viewport’a göre daha kullanışlı hale getirildi.
-- Haberler hâlâ karar motoruna bağlı değildir; karar ağırlığı 0%.
+NOT
+Haber başlıkları ve açıklamaları Türkçeye çevrilse bile haberler karar motoruna bağlanmaz.

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>OMNINOMICS Premium Trade Cockpit v5.1.4 TR News</title>
+<title>OMNINOMICS Premium Trade Cockpit v5.1.5 TR News</title>
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https:; font-src 'self' data:;">
 <style>
 :root{
@@ -247,7 +247,7 @@ td .pill,td .derivDecision,td .sourcePill{white-space:nowrap}
 
 
 
-/* ===================== v5.1.4 Premium Cockpit UI ===================== */
+/* ===================== v5.1.5 Premium Cockpit UI ===================== */
 :root{
   --glass:rgba(7,14,24,.72);
   --glass2:rgba(13,23,38,.64);
@@ -280,7 +280,7 @@ main{padding:0 20px 24px!important}.top{top:0;z-index:30;margin:0 -20px 0!import
 
 
 
-/* ===================== v5.1.4 Usability Polish: compact header + clean ticker ===================== */
+/* ===================== v5.1.5 Usability Polish: compact header + clean ticker ===================== */
 .top{min-height:72px!important;align-items:center!important;gap:18px!important}
 .top .title{min-width:0;flex:1 1 auto!important}
 .top .title h2{font-size:20px!important;line-height:1.15!important;margin:0!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -313,7 +313,7 @@ main{padding:0 20px 24px!important}.top{top:0;z-index:30;margin:0 -20px 0!import
 <main>
   <div class="mobile actions" id="mnav"></div>
   <section class="top">
-    <div class="title"><h2>OMNINOMICS PREMIUM TRADE COCKPIT v5.1.4</h2><span>OHLCV Core · Clean Chart · Türkçe Haber İzleme</span></div>
+    <div class="title"><h2>OMNINOMICS PREMIUM TRADE COCKPIT v5.1.5</h2><span>OHLCV Core · Clean Chart · Türkçe Haber İzleme</span></div>
     <div class="actions"><span class="badge" id="status"><span class="dot"></span> BAŞLATILIYOR</span><select class="sel" id="tf"><option>5m</option><option>15m</option><option selected>1h</option><option>4h</option><option>1d</option></select><button class="btn primary" id="refresh">Yenile</button></div>
   </section>
   <div id="view"></div>
@@ -4796,7 +4796,7 @@ console.log("OMNINOMICS v5.0.9 Decision Mode A/B Tester yüklendi.");
 
 
 <script>
-/* ===================== OMNINOMICS v5.1.4 Premium Cockpit + Turkish News Patch ===================== */
+/* ===================== OMNINOMICS v5.1.5 Premium Cockpit + Real Turkish News Patch ===================== */
 (function(){
   const UIKEY="omni_v511_premium_ui";
   const DEFAULT_UI={mode:"pro",overlays:{zones:true,sr:true,vwap:true,ema:true,bb:false,plan:true,volume:true,labels:true},newsSource:"free-tr",newsLang:"tr"};
@@ -4828,14 +4828,18 @@ console.log("OMNINOMICS v5.0.9 Decision Mode A/B Tester yüklendi.");
       ${statusPill("ENGINE","OHLCV CORE","info")}
     </div>`;
   }
-  function fallbackNews(){
-    let btc=getBtc(); let sig=btc?.signal||"NO_TRADE", price=btc?.price?"$"+fmt(btc.price):"BTC";
-    let arr=[
-      {source:"OMNI",title:`${st.sel||"BTCUSDT"} ${st.tf||"1h"} karar: ${niceSig(st.rows?.[st.sel]?.signal||sig)} · OHLCV kalite ${fmt(st.rows?.[st.sel]?.field?.ohlcvQuality||0,0)}`,url:"",created_at:new Date().toISOString()},
-      {source:"RISK",title:`BTC ${price} · rejim ${btc?.state||"-"} · whipsaw ${fmt(btc?.field?.whipsaw||0,0)}`,url:"",created_at:new Date().toISOString()},
-      {source:"INFO",title:"Haber başlığı ve açıklaması Türkçe gösterilir; haberlerin karar ağırlığı 0% kalır.",description:"Canlı çeviri için GOOGLE_TRANSLATE_API_KEY veya LIBRETRANSLATE_URL kullanılabilir. Ana haber omurgası ücretsiz GDELT kaynağıdır.",url:"",created_at:new Date().toISOString()}
-    ];
-    return arr;
+  function newsUnavailableItem(){
+    return [{
+      source:"DURUM",
+      provider:"Status",
+      title:"Canlı haber alınamadı veya kaynaklar boş döndü.",
+      description: st.newsNote || "Bu satır haber değildir; yalnızca veri durumu bilgisidir. Haber akışı karar motoruna bağlı değildir.",
+      created_at:new Date().toISOString(),
+      severity:"warn",
+      display_only:true,
+      decision_weight:0,
+      status_only:true
+    }];
   }
   async function loadNews(force=false){
     if(st.newsLoading&&!force)return; let now=Date.now(); if(!force&&st.newsLoadedAt&&now-st.newsLoadedAt<90000)return;
@@ -4844,21 +4848,25 @@ console.log("OMNINOMICS v5.0.9 Decision Mode A/B Tester yüklendi.");
       let r=await fetch(`/api/news?source=free&displayOnly=1&lang=tr&symbol=${encodeURIComponent(st.sel||"BTCUSDT")}`);
       let j=await r.json();
       if(!r.ok||j.error)throw new Error(j.error||"news error");
-      st.premiumNews=(j.items&&j.items.length?j.items:fallbackNews()).slice(0,18); st.newsProvider=j.provider||"news"; st.newsLang=j.language||"tr"; st.newsTranslationProvider=j.translation_provider||"none"; st.newsTranslationEnabled=!!j.translation_enabled; st.newsNote=j.note||"";
-    }catch(e){st.premiumNews=fallbackNews(); st.newsProvider="fallback"; st.newsNote=e.message||String(e);}
+      st.newsAvailable=!!j.news_available;
+      st.premiumNews=(Array.isArray(j.items)?j.items:[]).filter(n=>!n.status_only).slice(0,18);
+      st.newsProvider=j.provider||"none"; st.newsLang=j.language||"tr"; st.newsTranslationProvider=j.translation_provider||"none"; st.newsTranslationEnabled=!!j.translation_enabled; st.newsNote=j.note||"";
+    }catch(e){st.newsAvailable=false; st.premiumNews=[]; st.newsProvider="error"; st.newsNote=e.message||String(e);}
     st.newsLoadedAt=now; st.newsLoading=false; premiumPostRender();
   }
   function newsTitle(n){return n.title_display||n.title_tr||n.title||n.text||""}
   function newsDesc(n){return n.description_display||n.description_tr||n.description||n.summary||""}
   function newsTicker(){
-    let items=(st.premiumNews&&st.premiumNews.length?st.premiumNews:fallbackNews());
-    let doubled=items.concat(items).map(n=>`<span class="omniTickerItem ${rowClassFromText((n.title_original||n.title||n.text||"")+" "+(n.description_original||n.description||""))}"><span class="src">${esc(n.source||n.provider||"HABER")}</span>${esc(newsTitle(n))}</span>`).join("");
-    return `<div class="omniNewsTicker" id="omniNewsTicker"><div class="label">● TÜRKÇE HABER</div><div class="omniTickerTrack">${doubled}</div></div>`;
+    let real=(st.premiumNews&&st.premiumNews.length)?st.premiumNews:[];
+    let items=real.length?real:newsUnavailableItem();
+    let label=real.length?"● TÜRKÇE HABER":"● HABER DURUMU";
+    let doubled=items.concat(items).map(n=>`<span class="omniTickerItem ${n.status_only?'warn':rowClassFromText((n.title_original||n.title||n.text||"")+" "+(n.description_original||n.description||""))}"><span class="src">${esc(n.source||n.provider||"HABER")}</span>${esc(newsTitle(n))}</span>`).join("");
+    return `<div class="omniNewsTicker" id="omniNewsTicker"><div class="label">${label}</div><div class="omniTickerTrack">${doubled}</div></div>`;
   }
   function mountShell(){
     ui();
-    let top=document.querySelector(".top"); if(top){let h=top.querySelector(".title h2"); if(h)h.textContent="OMNINOMICS PREMIUM TRADE COCKPIT v5.1.4"; let s=top.querySelector(".title span"); if(s)s.textContent="OHLCV Core · Clean Chart · Türkçe Haber İzleme · Başlık + Açıklama · Karar Dışı";}
-    let brand=document.querySelector(".brand p"); if(brand)brand.textContent="Premium Trade Cockpit v5.1.4 TR News";
+    let top=document.querySelector(".top"); if(top){let h=top.querySelector(".title h2"); if(h)h.textContent="OMNINOMICS PREMIUM TRADE COCKPIT v5.1.5"; let s=top.querySelector(".title span"); if(s)s.textContent="OHLCV Core · Clean Chart · Türkçe Haber İzleme · Başlık + Açıklama · Karar Dışı";}
+    let brand=document.querySelector(".brand p"); if(brand)brand.textContent="Premium Trade Cockpit v5.1.5 TR News";
     let rb=document.getElementById("refresh"); if(rb&&window.refresh) rb.onclick=window.refresh;
     let main=document.querySelector("main"); if(!main)return;
     if(!document.getElementById("omniStatusMount")){let d=document.createElement("div");d.id="omniStatusMount";main.insertBefore(d,document.getElementById("view"));}
@@ -4888,7 +4896,7 @@ console.log("OMNINOMICS v5.0.9 Decision Mode A/B Tester yüklendi.");
     return rs.slice(0,6).map(r=>`<div class="omniReason ${r[0]}">${esc(r[1])}</div>`).join("");
   }
   function zonesHtml(a){let ns=a?.levels?.nearestSupport, nr=a?.levels?.nearestResistance, p=a?.price||0; let arr=[]; if(nr)arr.push(["Direnç Bölgesi",`$${fmt(nr.price)} · %${fmt((nr.price-p)/p*100,2)} yukarı`,"bad"]); if(ns)arr.push(["Destek Bölgesi",`$${fmt(ns.price)} · %${fmt((p-ns.price)/p*100,2)} aşağı`,"good"]); if(a?.plan){arr.push(["Stop",`$${fmt(a.plan.stop)}`,"bad"]);arr.push(["TP1 / TP2",`$${fmt(a.plan.tp1)} / $${fmt(a.plan.tp2)}`,"good"])} return `<div class="omniZoneList">${arr.map(x=>`<div class="omniZoneItem"><b class="${x[2]==='good'?'green':'red'}">${esc(x[0])}</b><span>${esc(x[1])}</span></div>`).join("")||'<div class="sub">Seviye yok.</div>'}</div>`}
-  function newsPanel(limit=7){let items=(st.premiumNews&&st.premiumNews.length?st.premiumNews:fallbackNews()).slice(0,limit);let tp=st.newsTranslationEnabled?`çeviri: ${st.newsTranslationProvider||"aktif"}`:`çeviri: kapalı/anahtar yok`;return `<div class="paHint" style="margin-bottom:10px">Haber akışı <b>karar dışı</b>: LONG/SHORT/WAIT skoruna etkisi 0%. Başlık ve açıklama Türkçe gösterilir. Kaynak: ${esc(st.newsProvider||"GDELT/Fallback")} · ${esc(tp)}</div><div class="omniNewsPanel">${items.map(n=>{let original=(n.title_original&&n.title_original!==newsTitle(n))?`<div class="original">Orijinal: ${esc(n.title_original)}</div>`:"";let cls=rowClassFromText((n.title_original||n.title||n.text||"")+" "+(n.description_original||n.description||""));let when=n.created_at?new Date(n.created_at).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}):'';return `<div class="omniNewsRow ${cls}"><div class="meta"><span>${esc(n.source||n.provider||'HABER')}</span><span>${esc(when)} · karar 0%</span></div><div class="title">${esc(newsTitle(n)||'-')}</div><div class="desc">${esc(newsDesc(n)||'Açıklama yok.')}</div>${original}</div>`}).join("")}</div>`}
+  function newsPanel(limit=7){let real=(st.premiumNews&&st.premiumNews.length)?st.premiumNews:[];let items=(real.length?real:newsUnavailableItem()).slice(0,limit);let tp=st.newsTranslationEnabled?`çeviri: ${st.newsTranslationProvider||"aktif"}`:`çeviri: kapalı/anahtar yok`;let provider=st.newsProvider||"none";let status=real.length?`Kaynak: ${esc(provider)}`:`Canlı haber yok / kaynaklar boş`;return `<div class="paHint" style="margin-bottom:10px">Haber akışı <b>karar dışı</b>: LONG/SHORT/WAIT skoruna etkisi 0%. Sadece gerçek haber kaynaklarından gelen başlıklar gösterilir; sistem notları haber gibi akmaz. ${status} · ${esc(tp)}</div><div class="omniNewsPanel">${items.map(n=>{let original=(n.title_original&&n.title_original!==newsTitle(n))?`<div class="original">Orijinal: ${esc(n.title_original)}</div>`:"";let cls=n.status_only?'warn':rowClassFromText((n.title_original||n.title||n.text||"")+" "+(n.description_original||n.description||""));let when=n.created_at?new Date(n.created_at).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}):'';let link=n.url?`<a href="${esc(n.url)}" target="_blank" rel="noreferrer" class="title">${esc(newsTitle(n)||'-')}</a>`:`<div class="title">${esc(newsTitle(n)||'-')}</div>`;return `<div class="omniNewsRow ${cls}"><div class="meta"><span>${esc(n.source||n.provider||'HABER')}</span><span>${esc(when)} · karar 0%</span></div>${link}<div class="desc">${esc(newsDesc(n)||'Açıklama yok.')}</div>${original}</div>`}).join("")}</div>${!real.length?`<div class="paHint" style="margin-top:10px">Debug: ${esc(st.newsNote||'Haber endpointi gerçek başlık döndürmedi. Vercel Functions loglarını kontrol et.')}</div>`:''}`}
   function premiumDetail(){let a=st.rows[st.sel]; if(!a)return `<div class="card">Veri yok.</div>`; setTimeout(()=>drawChart("premiumChart",a,true),60);let sig=niceSig(a.signal), q=Math.max(a.longQ||0,a.shortQ||0,a.field?.ohlcvQuality||0);return `<div class="omniCockpit"><div class="card"><div class="omniChartHeader"><div class="omniChartTitle"><b>${esc(a.symbol)} · ${esc(st.tf)} Premium Chart</b><span>Clean zones + OHLCV karar motoru · Funding/OI/orderbook karar dışı</span></div>${toggles()}</div><div class="chart omniHeroChart"><canvas id="premiumChart"></canvas></div></div><div class="grid"><div class="card omniWhyCard"><h3>Karar Özeti</h3><div class="omniSignalBig"><div><div class="sig ${cssClassSignal(a.signal)==='good'?'green':cssClassSignal(a.signal)==='bad'?'red':'yellow'}">${esc(sig)}</div><div class="sub">${esc(a.state||'-')} · ${a.price?'$'+fmt(a.price):'-'} · ${pct(a.change||0)}</div></div><div class="score">${fmt(q,0)}</div></div><h3 style="margin-top:14px">Neden?</h3>${signalReasons(a)}<h3 style="margin-top:14px">Trade Bölgeleri</h3>${zonesHtml(a)}</div><div class="card"><h3>Türkçe Haber Akışı <span class="pill">Karar Dışı · 0%</span></h3>${newsPanel(6)}</div></div></div><div class="omniDashGrid" style="margin-top:14px">${mini('OHLCV Q',fmt(a.field?.ohlcvQuality||q,0),'Final kalite','info')}${mini('ADX',fmt(a.field?.adx||0,0),'Trend gücü',(a.field?.adx||0)>25?'good':'warn')}${mini('Whipsaw',fmt(a.field?.whipsaw||0,0),'Fake hareket riski',(a.field?.whipsaw||0)>65?'bad':'good')}${mini('Volume',fmt(a.field?.vc||0,0),'Hacim teyidi',(a.field?.vc||0)>55?'good':'warn')}${mini('Long Q',fmt(a.longQ||0,0),'Long skor','good')}${mini('Short Q',fmt(a.shortQ||0,0),'Short skor','bad')}</div>`}
   detail=premiumDetail; if(typeof PAGE_RENDERERS!=="undefined")PAGE_RENDERERS.detail=()=>premiumDetail();
   function premiumDashboard(){let rows=getRows(), a=st.rows[st.sel]||getBtc(); if(a)setTimeout(()=>drawChart("dashPremiumChart",a,true),60); let live=rows.filter(r=>String(r.source||"").startsWith("LIVE")).length, bestL=[...rows].sort((x,y)=>(y.longQ||0)-(x.longQ||0))[0], bestS=[...rows].sort((x,y)=>(y.shortQ||0)-(x.shortQ||0))[0];return `<div class="omniDashGrid">${mini('Live Data',`${live}/${rows.length}`,'Veri sağlığı',live===rows.length?'good':live?'warn':'bad')}${mini('BTC Regime',esc(getBtc()?.state||'-'),'Ana piyasa fazı','info')}${mini('Market Breadth',fmt(marketBreadth(),0)+'%','Pozitif coin oranı',marketBreadth()>55?'good':marketBreadth()<45?'bad':'warn')}${mini('Best Long',esc(bestL?.symbol||'-'),fmt(bestL?.longQ||0,0)+' skor','good')}${mini('Best Short',esc(bestS?.symbol||'-'),fmt(bestS?.shortQ||0,0)+' skor','bad')}${mini('Selected',esc(st.sel),esc(st.tf),'info')}</div><div class="omniCockpit"><div class="card"><div class="omniChartHeader"><div class="omniChartTitle"><b>${esc(st.sel)} Live Decision Chart</b><span>En kritik 3 şey: rejim · yön · seviye</span></div>${toggles()}</div><div class="chart omniHeroChart"><canvas id="dashPremiumChart"></canvas></div></div><div class="grid"><div class="card omniWhyCard"><h3>Karar Motoru</h3>${a?`<div class="omniSignalBig"><div><div class="sig ${cssClassSignal(a.signal)==='good'?'green':cssClassSignal(a.signal)==='bad'?'red':'yellow'}">${esc(niceSig(a.signal))}</div><div class="sub">${esc(a.symbol)} · ${pct(a.change||0)} · ${esc(a.state||'-')}</div></div><div class="score">${fmt(Math.max(a.longQ||0,a.shortQ||0,a.field?.ohlcvQuality||0),0)}</div></div>${signalReasons(a)}<h3 style="margin-top:14px">Bölgeler</h3>${zonesHtml(a)}`:'Veri yok'}</div><div class="card"><h3>Türkçe Haber İzleme · Karar Dışı</h3>${newsPanel(7)}</div></div></div><div class="split" style="margin-top:14px"><div class="card"><h3>Coin Tablosu</h3><div class="omniTableWrap">${table(rows.sort((x,y)=>(y.field?.ohlcvQuality||0)-(x.field?.ohlcvQuality||0)))}</div></div><div class="card"><h3>Fırsat Radar</h3>${opportunityMini()}</div></div>`;}
@@ -4909,7 +4917,7 @@ console.log("OMNINOMICS v5.0.9 Decision Mode A/B Tester yüklendi.");
   };
   setInterval(()=>loadNews(false),120000);
   window.loadNews=loadNews;
-  console.log("OMNINOMICS v5.1.4 Premium Cockpit UI + Turkish News loaded");
+  console.log("OMNINOMICS v5.1.5 Premium Cockpit UI + Turkish News loaded");
 })();
 </script>
 
