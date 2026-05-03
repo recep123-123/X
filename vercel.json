@@ -1,0 +1,47 @@
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/api/market",
+      "destination": "/api/market.js"
+    },
+    {
+      "source": "/api/liquidity",
+      "destination": "/api/liquidity.js"
+    },
+    {
+      "source": "/api/attention",
+      "destination": "/api/attention.js"
+    },
+    {
+      "source": "/api/intel",
+      "destination": "/api/intel.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        }
+      ]
+    }
+  ],
+  "buildCommand": "echo Static deployment - public output ready",
+  "installCommand": "echo No install required",
+  "outputDirectory": "public"
+}
