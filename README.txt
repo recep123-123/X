@@ -50,3 +50,29 @@ VERCEL DEPLOY
 
 NOT
 Haber başlıkları ve açıklamaları Türkçeye çevrilse bile haberler karar motoruna bağlanmaz.
+
+
+---
+OMNINOMICS v5.1.6 SMC ALPHA ENGINE
+
+Bu sürümde SMC Alpha Engine eklendi:
+- PDH / PDL ve Asian Range hesaplar.
+- Liquidity Sweep tespit eder.
+- Sweep sonrası 1-5 mum içinde displacement + FVG arar.
+- FVG retest ve proxy CHOCH durumunu izler.
+- Minimum R/R filtresi uygular.
+- SMC Alpha ayrı bir confirmation/setup layer olarak çalışır; OHLCV Core final kararını override etmez.
+- Haberler karar dışıdır: decision_weight 0%.
+- Funding/OI/orderbook karar dışıdır: panel-only.
+
+Yeni sayfa: SMC Alpha.
+Dashboard ve Coin Detayı içine SMC Alpha Radar / SMC Alpha Engine kutuları eklenmiştir.
+
+
+OMNINOMICS v5.1.7 — Price Action Dominant Decision Engine
+- Final karar mimarisi PA Dominant oldu.
+- Ağırlıklar: Price Action %40, SMC Alpha %25, OHLCV Core %20, Risk/Whipsaw %15.
+- Haberler karar dışı: %0, sadece ekranda izleme.
+- Funding/OI/orderbook karar dışı: %0.
+- Yeni sayfa: Price Action > PA Engine.
+- Dashboard ve Coin Detail ekranlarına PA Dominant kartları eklendi.
