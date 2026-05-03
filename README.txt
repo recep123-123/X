@@ -26,7 +26,7 @@ Vercel deploy:
 - FreeNewsApi veya Finnhub key eklersen haber havuzu genişler.
 
 
-================ OMNINOMICS v5.1.3 — TÜRKÇE HABER GÜNCELLEMESİ ================
+================ OMNINOMICS v5.1.4 — TÜRKÇE HABER GÜNCELLEMESİ ================
 
 Bu sürümde haber akışı karar motoruna bağlanmadan ekranda gösterilir.
 Karar ağırlığı: 0%
@@ -59,3 +59,11 @@ Not:
 Başlık ve açıklama Türkçeye çevrilse bile haberler LONG/SHORT/WAIT kararına bağlanmaz.
 Haberler yalnızca ekranda hızlı piyasa istihbaratı olarak gösterilir.
 ===============================================================================
+
+
+v5.1.4 UI düzeltmesi:
+- Üst header tek satıra sıkıştırıldı; zaman periyodu seçici artık tam genişlik almıyor.
+- Türkçe haber ticker taşma/üst üste binme sorunu giderildi.
+- Haber etiketi sabitlendi, kayan yazı alanı ayrıldı.
+- Grafik yüksekliği viewport’a göre daha kullanışlı hale getirildi.
+- Haberler hâlâ karar motoruna bağlı değildir; karar ağırlığı 0%.
