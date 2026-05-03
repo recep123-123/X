@@ -1,65 +1,61 @@
-OMNINOMICS v5.1.0 — OHLCV Core Decision Engine
+OMNINOMICS v5.1.2 — Premium Cockpit / Free News Watch
 
-Bu sürüm, kullanıcının son talebine göre v5.0.9 Decision Mode paketinin üzerine temiz karar motoru düzeltmesi getirir.
+Bu sürümde haber akışı karar motoruna bağlanmadı.
 
-Ana kararlar:
-1. Harmony / Entropy final karar motorundan çıkarıldı.
-   - Karar ağırlığı: 0%.
-   - Ana tablo ve karar modu ekranı artık H/E üzerinden okunmaz.
-   - H/E eski hesaplar bazı legacy alanlarda kalsa bile final LONG/SHORT/WAIT/NO_TRADE üretiminde kullanılmaz.
+ANA KURAL
+- Haberler ekranda görünür.
+- Haberler LONG / SHORT / WAIT kararını değiştirmez.
+- Haberlerin karar ağırlığı: 0%.
+- Karar motoru: OHLCV Core.
+- Funding / OI / orderbook: panel/gözlem amaçlıdır, karar dışıdır.
 
-2. Funding / Open Interest / orderbook final karara eklenmedi.
-   - Karar ağırlığı: 0%.
-   - Türev ve orderbook endpointleri varsa sadece panel/gözlem amaçlı kalır.
-   - Market Intelligence overlay artık sinyali WAIT/NO_TRADE yapmaz, size değiştirmez, yön çevirmez.
+HABER KAYNAKLARI
+1) GDELT: varsayılan, ücretsiz, API key gerektirmez.
+2) FreeNewsApi: opsiyonel ücretsiz kaynak. Vercel Environment Variable:
+   FREENEWS_API_KEY=...
+3) Finnhub: opsiyonel finans haber kaynağı. Vercel Environment Variable:
+   FINNHUB_API_KEY=...
 
-3. Yeni aktif karar motoru: OHLCV Core.
-   Ücretsiz ve daha stabil verilerden hesaplanır:
-   - OHLCV mum verisi
-   - Hacim / volume ratio
-   - EMA20 / EMA50 / EMA200
-   - VWAP
-   - RSI
-   - MACD histogram eğimi
-   - ATR tabanlı destek/direnç mesafesi
-   - ADX
-   - +DI / -DI
-   - RSI divergence
-   - Whipsaw / chop skoru
-   - Compression / range / expansion rejimi
-   - Mum fitil kalitesi
-   - Destek / direnç yakınlık filtresi
+NOT
+- X / @DeItaone entegrasyonu bu sürümde ana kaynak değildir; ücretli API bağımlılığı istemediğimiz için ücretsiz haber mimarisine geçildi.
+- /api/news endpoint'i display_only=true ve decision_weight=0 döndürür.
 
-4. Arayüz değişiklikleri:
-   - Başlık v5.1.0 OHLCV Core olarak güncellendi.
-   - Ana tablo H/E sütunları yerine OHLCV Q, ADX, Whipsaw ve Volume gösterir.
-   - Decision Mode ekranı tek aktif motor olarak OHLCV Core gösterir.
-   - Build badge: H/E removed, Derivatives panel-only.
-   - Self-Test içine OHLCV Core, H/E disabled ve Funding/OI/orderbook excluded kontrolleri eklendi.
-
-Yükleme:
-1. ZIP'i aç.
-2. GitHub repo köküne tüm dosyaları yükle.
-3. public/index.html dosyasının güncel olduğundan emin ol.
-4. Commit changes.
-5. Vercel deploy sonrası Ctrl+F5 yap.
-6. Sistem → Build Info bölümünde v5.1.0 gör.
-7. Sistem → Self-Test çalıştır.
-8. Sinyal ve Karar → Karar Modu ekranında OHLCV Core aktif görünmeli.
-
-Önemli:
-- Bu sürüm daha az “fantezi veri”, daha fazla stabil teknik karar mantığı kullanır.
-- Funding/OI/orderbook hâlâ ilgili panel sayfalarında görünebilir; bu normaldir. Karara girmezler.
-- Harmony/Entropy bazı eski isimli localStorage/legacy alanlarda kalabilir; final karar ağırlıkları sıfırdır.
-
---- Önceki paket notu ---
-OMNINOMICS v5.0.9 — Decision Mode A/B Tester
-Classic / PA Dominant / Pure PA + Intelligence modları içeriyordu. v5.1.0 bu mod karmaşasını sadeleştirip tek aktif karar motorunu OHLCV Core yapar.
+Vercel deploy:
+- ZIP'i Vercel'e yükle.
+- Ekstra key girmesen de GDELT ile çalışır.
+- FreeNewsApi veya Finnhub key eklersen haber havuzu genişler.
 
 
-=== v5.1.1 PREMIUM COCKPIT UI ===
-- Premium cockpit layout: sticky global status bar, breaking news ticker, clean/pro/full chart modes.
-- Chart upgraded: support/resistance zones, right-side labels, current price tag, overlay toggles, volume layer.
-- Dashboard upgraded: selected coin chart + decision WHY panel + @DeItaone/news panel.
-- Harmony/Entropy remains out of final decision. Funding/OI/orderbook remain panel-only and do not affect decisions.
-- News feed: /api/news added. To enable live @DeItaone X feed, add X_BEARER_TOKEN in Vercel Environment Variables. Without token, the app falls back to GDELT/system news so the UI still works.
+================ OMNINOMICS v5.1.3 — TÜRKÇE HABER GÜNCELLEMESİ ================
+
+Bu sürümde haber akışı karar motoruna bağlanmadan ekranda gösterilir.
+Karar ağırlığı: 0%
+Decision binding: DISABLED
+
+Yeni özellikler:
+- Haber başlığı için Türkçe gösterim alanı: title_display / title_tr
+- Haber açıklaması için Türkçe gösterim alanı: description_display / description_tr
+- Orijinal başlık korunur: title_original
+- Orijinal açıklama korunur: description_original
+- Haber panelinde Türkçe başlık + Türkçe açıklama gösterilir.
+- Ticker Türkçe başlığı kullanır.
+- Çeviri anahtarı yoksa uygulama bozulmaz; orijinal dil gösterilir.
+
+Opsiyonel ortam değişkenleri:
+NEWS_LANGUAGE=tr
+NEWS_TRANSLATION_PROVIDER=auto | google | libre | none
+GOOGLE_TRANSLATE_API_KEY=...
+LIBRETRANSLATE_URL=https://senin-libretranslate-sunucun.com
+LIBRETRANSLATE_API_KEY=...  (opsiyonel)
+
+Ücretsiz haber omurgası:
+- GDELT varsayılan ve key gerektirmez.
+
+Opsiyonel haber kaynakları:
+FREENEWS_API_KEY=...
+FINNHUB_API_KEY=...
+
+Not:
+Başlık ve açıklama Türkçeye çevrilse bile haberler LONG/SHORT/WAIT kararına bağlanmaz.
+Haberler yalnızca ekranda hızlı piyasa istihbaratı olarak gösterilir.
+===============================================================================

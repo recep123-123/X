@@ -1,6 +1,6 @@
 {
-  "name": "omninomics-v511-premium-cockpit",
-  "version": "5.1.1",
+  "name": "omninomics-v513-premium-cockpit-tr-news",
+  "version": "5.1.3",
   "private": true,
   "scripts": {
     "build": "echo Static deployment - public output ready"
